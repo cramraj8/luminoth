@@ -1,3 +1,13 @@
+# Nuclei Ignore files
+/tf_dataset*
+/luminoth.egg-info
+/jobs*
+start_cli.sh
+im1.jpg
+/hello*
+
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

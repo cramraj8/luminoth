@@ -66,7 +66,7 @@ def filter_classes(objects, only_classes=None, ignore_classes=None):
     return objects
 
 
-def predict_image(network, path, only_classes=None, ignore_classes=None,
+def predict_image(network, path, do_labels=True, objectness=True, only_classes=None, ignore_classes=None,
                   save_path=None):
     click.echo('Predicting {}...'.format(path), nl=False)
 
@@ -91,13 +91,13 @@ def predict_image(network, path, only_classes=None, ignore_classes=None,
 
     # Save predicted image.
     if save_path:
-        vis_objects(np.array(image), objects).save(save_path)
+        vis_objects(np.array(image), objects, labels=do_labels, objectness).save(save_path)
 
     click.echo(' done.')
     return objects
 
 
-def predict_video(network, path, only_classes=None, ignore_classes=None,
+def predict_video(network, path, do_labels=True, only_classes=None, ignore_classes=None,
                   save_path=None):
     if save_path:
         # We hardcode the video output to mp4 for the time being.
@@ -183,9 +183,11 @@ def predict_video(network, path, only_classes=None, ignore_classes=None,
 @click.option('--only-class', '-k', default=None, multiple=True, help='Class to ignore when predicting.')  # noqa
 @click.option('--ignore-class', '-K', default=None, multiple=True, help='Class to ignore when predicting.')  # noqa
 @click.option('--debug', is_flag=True, help='Set debug level logging.')
+@click.option('--do-labelling', default=False, type=bool, help='When drawing, whether to drop labels at visualizing.')
+@click.option('--objectness', default=True, type=bool, help='Enable objectness properties in visualization and prediction.')
 def predict(path_or_dir, config_files, checkpoint, override_params,
             output_path, save_media_to, min_prob, max_detections, only_class,
-            ignore_class, debug):
+            ignore_class, debug, do_labelling, objectness):
     """Obtain a model's predictions.
 
     Receives either `config_files` or `checkpoint` in order to load the correct
@@ -220,10 +222,6 @@ def predict(path_or_dir, config_files, checkpoint, override_params,
 
     # Build the `Formatter` based on the outputs, which automatically writes
     # the formatted output to all the requested output files.
-    if output_path == '-':
-        output = sys.stdout
-    else:
-        output = open(output_path, 'w')
 
     # Create `save_media_to` if specified and it doesn't exist.
     if save_media_to:
@@ -265,19 +263,31 @@ def predict(path_or_dir, config_files, checkpoint, override_params,
     for file in files:
 
         # Get the media output path, if media storage is requested.
-        save_path = os.path.join(
-            save_media_to, 'pred_{}'.format(os.path.basename(file))
+        save_path_PNG = os.path.join(
+            save_media_to, 'PNG', 'pred_{}'.format(os.path.basename(file))
         ) if save_media_to else None
+        save_path_JSON = os.path.join(
+            save_media_to, 'JSON', 'pred_{}.json'.format(
+                os.path.basename(file)[:-4])
+        ) if save_media_to else None
+
+        if not os.path.exists(os.path.join(save_media_to, 'PNG')):
+            os.makedirs(os.path.join(save_media_to, 'PNG'))
+        if not os.path.exists(os.path.join(save_media_to, 'JSON')):
+            os.makedirs(os.path.join(save_media_to, 'JSON'))
 
         file_type = get_file_type(file)
         predictor = predict_image if file_type == 'image' else predict_video
 
         objects = predictor(
             network, file,
+            do_labels=do_labelling,
             only_classes=only_class,
             ignore_classes=ignore_class,
-            save_path=save_path,
+            save_path=save_path_PNG,
         )
+
+        output = open(save_path_JSON, 'w')
 
         # TODO: Not writing jsons for video files for now.
         if objects is not None and file_type == 'image':

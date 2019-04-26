@@ -135,7 +135,7 @@ def draw_label(draw, coords, label, prob, color, scale=1):
     ], prob, font=prob_font)
 
 
-def vis_objects(image, objects, colormap=None, labels=True, scale=1, fill=30):
+def vis_objects(image, objects, colormap=(0, 255, 0), labels=True, scale=1, fill=30):
     """Visualize objects as returned by `Detector`.
 
     Arguments:
@@ -158,14 +158,16 @@ def vis_objects(image, objects, colormap=None, labels=True, scale=1, fill=30):
         objects = [objects]
 
     if colormap is None:
-        colormap = build_colormap()
+        colormap_fcn = build_colormap()
+    else:
+        colormap_fcn = colormap
 
     image = Image.fromarray(image.astype(np.uint8))
 
     draw = ImageDraw.Draw(image, 'RGBA')
     for obj in objects:
         # TODO: Can we do image resolution-agnostic?
-        color = colormap(obj['label'])
+        color = colormap_fcn(obj['label'])
 
         # Cast `width` to int so it also works in Python 2
         draw_rectangle(
