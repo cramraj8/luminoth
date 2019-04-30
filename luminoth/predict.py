@@ -66,7 +66,7 @@ def filter_classes(objects, only_classes=None, ignore_classes=None):
     return objects
 
 
-def predict_image(network, path, do_labels=True, objectness=True, only_classes=None, ignore_classes=None,
+def predict_image(network, path, do_labels=True, class_agnostic=True, only_classes=None, ignore_classes=None,
                   save_path=None):
     click.echo('Predicting {}...'.format(path), nl=False)
 
@@ -91,13 +91,14 @@ def predict_image(network, path, do_labels=True, objectness=True, only_classes=N
 
     # Save predicted image.
     if save_path:
-        vis_objects(np.array(image), objects, labels=do_labels, objectness).save(save_path)
+        vis_objects(np.array(image), objects, labels=do_labels,
+                    class_agnostic=True).save(save_path)
 
     click.echo(' done.')
     return objects
 
 
-def predict_video(network, path, do_labels=True, only_classes=None, ignore_classes=None,
+def predict_video(network, path, do_labels=True, class_agnostic=True, only_classes=None, ignore_classes=None,
                   save_path=None):
     if save_path:
         # We hardcode the video output to mp4 for the time being.
@@ -184,10 +185,11 @@ def predict_video(network, path, do_labels=True, only_classes=None, ignore_class
 @click.option('--ignore-class', '-K', default=None, multiple=True, help='Class to ignore when predicting.')  # noqa
 @click.option('--debug', is_flag=True, help='Set debug level logging.')
 @click.option('--do-labelling', default=False, type=bool, help='When drawing, whether to drop labels at visualizing.')
-@click.option('--objectness', default=True, type=bool, help='Enable objectness properties in visualization and prediction.')
+# @click.option('--objectness_color', default=True, type=bool, help='Enable objectness properties in visualization and prediction.')
+@click.option('--only-one-class', '-k', default=True, type=bool, help='Class agnostic model when predicting.')  # noqa
 def predict(path_or_dir, config_files, checkpoint, override_params,
             output_path, save_media_to, min_prob, max_detections, only_class,
-            ignore_class, debug, do_labelling, objectness):
+            ignore_class, debug, do_labelling, only_one_class):
     """Obtain a model's predictions.
 
     Receives either `config_files` or `checkpoint` in order to load the correct
@@ -282,6 +284,7 @@ def predict(path_or_dir, config_files, checkpoint, override_params,
         objects = predictor(
             network, file,
             do_labels=do_labelling,
+            class_agnostic=only_one_class,
             only_classes=only_class,
             ignore_classes=ignore_class,
             save_path=save_path_PNG,

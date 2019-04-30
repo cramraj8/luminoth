@@ -33,6 +33,10 @@
 
 1. split the -d destination folder into 2 sub-folders for JSON & PNG files
 2. remove output path creation line
+3. introduced some new flags:
+    --do-labelling
+    --only-one-class
+
 
 
 
@@ -88,3 +92,7 @@
 
 
 
+Note:
+
+1. Always have image data in .jpg format. If you have .png format, then change
+    .png -> .jpg in the file /luminoth/tools/dataset/readers/object_detection/pascalvoc.py
