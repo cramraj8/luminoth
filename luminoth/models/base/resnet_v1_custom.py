@@ -269,6 +269,8 @@ def resnet_v1_block(scope, base_depth, num_units, stride):
 
 
 def resnet_v1_50(inputs,
+                 block2_num_units=4,
+                 block3_num_units=6,
                  num_classes=None,
                  is_training=True,
                  global_pool=True,
@@ -284,9 +286,9 @@ def resnet_v1_50(inputs,
     blocks = [
         resnet_v1_block('block1', base_depth=depth_func(64), num_units=3,
                         stride=2),
-        resnet_v1_block('block2', base_depth=depth_func(128), num_units=4,
+        resnet_v1_block('block2', base_depth=depth_func(128), num_units=block2_num_units,
                         stride=2),
-        resnet_v1_block('block3', base_depth=depth_func(256), num_units=6,
+        resnet_v1_block('block3', base_depth=depth_func(256), num_units=block3_num_units,
                         stride=2),
         resnet_v1_block('block4', base_depth=depth_func(512), num_units=3,
                         stride=1),
@@ -300,6 +302,8 @@ resnet_v1_50.default_image_size = resnet_v1.default_image_size
 
 
 def resnet_v1_101(inputs,
+                  block2_num_units=4,
+                  block3_num_units=23,
                   num_classes=None,
                   is_training=True,
                   global_pool=True,
@@ -315,9 +319,9 @@ def resnet_v1_101(inputs,
     blocks = [
         resnet_v1_block('block1', base_depth=depth_func(64), num_units=3,
                         stride=2),
-        resnet_v1_block('block2', base_depth=depth_func(128), num_units=4,
+        resnet_v1_block('block2', base_depth=depth_func(128), num_units=block2_num_units,
                         stride=2),
-        resnet_v1_block('block3', base_depth=depth_func(256), num_units=15,
+        resnet_v1_block('block3', base_depth=depth_func(256), num_units=block3_num_units,
                         stride=2),
         resnet_v1_block('block4', base_depth=depth_func(512), num_units=3,
                         stride=1),
@@ -331,6 +335,8 @@ resnet_v1_101.default_image_size = resnet_v1.default_image_size
 
 
 def resnet_v1_152(inputs,
+                  block2_num_units=8,
+                  block3_num_units=36,
                   num_classes=None,
                   is_training=True,
                   global_pool=True,
@@ -346,9 +352,9 @@ def resnet_v1_152(inputs,
     blocks = [
         resnet_v1_block('block1', base_depth=depth_func(64), num_units=3,
                         stride=2),
-        resnet_v1_block('block2', base_depth=depth_func(128), num_units=8,
+        resnet_v1_block('block2', base_depth=depth_func(128), num_units=block2_num_units,
                         stride=2),
-        resnet_v1_block('block3', base_depth=depth_func(256), num_units=36,
+        resnet_v1_block('block3', base_depth=depth_func(256), num_units=block3_num_units,
                         stride=2),
         resnet_v1_block('block4', base_depth=depth_func(512), num_units=3,
                         stride=1),
@@ -362,6 +368,8 @@ resnet_v1_152.default_image_size = resnet_v1.default_image_size
 
 
 def resnet_v1_200(inputs,
+                  block2_num_units=24,
+                  block3_num_units=36,
                   num_classes=None,
                   is_training=True,
                   global_pool=True,
@@ -377,9 +385,9 @@ def resnet_v1_200(inputs,
     blocks = [
         resnet_v1_block('block1', base_depth=depth_func(64), num_units=3,
                         stride=2),
-        resnet_v1_block('block2', base_depth=depth_func(128), num_units=24,
+        resnet_v1_block('block2', base_depth=depth_func(128), num_units=block2_num_units,
                         stride=2),
-        resnet_v1_block('block3', base_depth=depth_func(256), num_units=36,
+        resnet_v1_block('block3', base_depth=depth_func(256), num_units=block3_num_units,
                         stride=2),
         resnet_v1_block('block4', base_depth=depth_func(512), num_units=3,
                         stride=1),

@@ -131,6 +131,11 @@ model:
   base_network:
     # Which type of pretrained network to use.
     architecture: resnet_v1_101
+    # Number of units used at ResNet_v1 block2. This block makes the model deeper while going
+    # from resnet50 to resnet200
+    block2_num_units: 4
+    # Number of units used at ResNet_v1 block3
+    block3_num_units: 6
     # Should we train the pretrained network.
     trainable: True
     # From which file to load the weights.

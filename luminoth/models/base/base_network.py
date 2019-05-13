@@ -88,6 +88,8 @@ class BaseNetwork(snt.AbstractModule):
             return functools.partial(
                 getattr(resnet_v1_custom, self._architecture),
                 is_training=train_batch_norm,
+                block2_num_units=self._config.get('block2_num_units'),
+                block3_num_units=self._config.get('block3_num_units'),
                 num_classes=None,
                 global_pool=False,
                 output_stride=output_stride
