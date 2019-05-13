@@ -1,7 +1,8 @@
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from tensorflow.contrib.slim.nets import resnet_utils, resnet_v1
+from tensorflow.contrib.slim.nets import resnet_utils
+from luminoth.models.base import resnet_v1_custom
 from luminoth.models.base import BaseNetwork
 
 
@@ -67,10 +68,10 @@ class TruncatedBaseNetwork(BaseNetwork):
                 )
                 with tf.variable_scope(self._architecture, reuse=True):
                     resnet_arg_scope = resnet_utils.resnet_arg_scope(
-                            batch_norm_epsilon=1e-5,
-                            batch_norm_scale=True,
-                            weight_decay=weight_decay
-                        )
+                        batch_norm_epsilon=1e-5,
+                        batch_norm_scale=True,
+                        weight_decay=weight_decay
+                    )
                     with slim.arg_scope(resnet_arg_scope):
                         with slim.arg_scope(
                             [slim.batch_norm], is_training=train_batch_norm
@@ -78,7 +79,7 @@ class TruncatedBaseNetwork(BaseNetwork):
                             blocks = [
                                 resnet_utils.Block(
                                     'block4',
-                                    resnet_v1.bottleneck,
+                                    resnet_v1_custom.bottleneck,
                                     [{
                                         'depth': 2048,
                                         'depth_bottleneck': 512,
@@ -86,6 +87,7 @@ class TruncatedBaseNetwork(BaseNetwork):
                                     }] * 3
                                 )
                             ]
+
                             proposal_classifier_features = (
                                 resnet_utils.stack_blocks_dense(inputs, blocks)
                             )

@@ -4,7 +4,8 @@ import sonnet as snt
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from tensorflow.contrib.slim.nets import resnet_v2, resnet_v1, vgg
+from tensorflow.contrib.slim.nets import resnet_v2, vgg
+from luminoth.models.base import resnet_v1_custom
 
 from luminoth.models.base import truncated_vgg
 from luminoth.utils.checkpoint_downloader import get_checkpoint_file
@@ -85,7 +86,7 @@ class BaseNetwork(snt.AbstractModule):
                 is_training and self._config.get('train_batch_norm')
             )
             return functools.partial(
-                getattr(resnet_v1, self._architecture),
+                getattr(resnet_v1_custom, self._architecture),
                 is_training=train_batch_norm,
                 num_classes=None,
                 global_pool=False,
@@ -136,7 +137,8 @@ class BaseNetwork(snt.AbstractModule):
         if self.truncated_vgg_16_type:
             return vgg.truncated_vgg_16.default_image_size
         if self.resnet_v1_type:
-            return resnet_v1.resnet_v1.default_image_size
+            # return resnet_v1.resnet_v1.default_image_size
+            return resnet_v1_custom.resnet_v1.default_image_size
         if self.resnet_v2_type:
             return resnet_v2.resnet_v2.default_image_size
 

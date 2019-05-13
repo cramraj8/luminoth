@@ -4,6 +4,7 @@
 /jobs*
 start_cli.sh
 im1.jpg
+*.svs
 /hello*
 /output*
 

@@ -1,3 +1,18 @@
+
+
+# Forked renset-numunits branch modifications:
+
+added resnet file
+
+Includes resnet tf-slim script, but current experiment contains ResNet model of
+* ResNet-101
+* fine-tune from : block 2
+* end-point : block 4
+* num_units @ block3 = 7
+
+
+
+
 [![Luminoth](https://user-images.githubusercontent.com/270983/31414425-c12314d2-ae15-11e7-8cc9-42d330b03310.png)](https://luminoth.ai)
 
 ---
