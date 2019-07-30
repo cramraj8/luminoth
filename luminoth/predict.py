@@ -1,6 +1,7 @@
 import click
 import json
 import numpy as np
+import pandas as pd
 import os
 import skvideo.io
 import sys
@@ -178,13 +179,14 @@ def predict_video(network, path, only_classes=None, ignore_classes=None,
 @click.option('override_params', '--override', '-o', multiple=True, help='Override model config params.')  # noqa
 @click.option('output_path', '--output', '-f', default='-', help='Output file with the predictions (for example, JSON bounding boxes).')  # noqa
 @click.option('--save-media-to', '-d', help='Directory to store media to.')
+@click.option('--save-do-features', '-f', default=True, help='Boolean to decide whether to save feature vectors.')
 @click.option('--min-prob', default=0.5, type=float, help='When drawing, only draw bounding boxes with probability larger than.')  # noqa
 @click.option('--max-detections', default=100, type=int, help='Maximum number of detections per image.')  # noqa
 @click.option('--only-class', '-k', default=None, multiple=True, help='Class to ignore when predicting.')  # noqa
 @click.option('--ignore-class', '-K', default=None, multiple=True, help='Class to ignore when predicting.')  # noqa
 @click.option('--debug', is_flag=True, help='Set debug level logging.')
 def predict(path_or_dir, config_files, checkpoint, override_params,
-            output_path, save_media_to, min_prob, max_detections, only_class,
+            output_path, save_media_to, save_do_features, min_prob, max_detections, only_class,
             ignore_class, debug):
     """Obtain a model's predictions.
 
@@ -220,10 +222,10 @@ def predict(path_or_dir, config_files, checkpoint, override_params,
 
     # Build the `Formatter` based on the outputs, which automatically writes
     # the formatted output to all the requested output files.
-    if output_path == '-':
-        output = sys.stdout
-    else:
-        output = open(output_path, 'w')
+    # if output_path == '-':
+    #     output = sys.stdout
+    # else:
+    #     output = open(output_path, 'w')
 
     # Create `save_media_to` if specified and it doesn't exist.
     if save_media_to:
@@ -265,9 +267,24 @@ def predict(path_or_dir, config_files, checkpoint, override_params,
     for file in files:
 
         # Get the media output path, if media storage is requested.
-        save_path = os.path.join(
-            save_media_to, 'pred_{}'.format(os.path.basename(file))
+        save_path_PNG = os.path.join(
+            save_media_to, 'PNG', 'pred_{}'.format(os.path.basename(file))
         ) if save_media_to else None
+        save_path_JSON = os.path.join(
+            save_media_to, 'JSON', 'pred_{}.json'.format(
+                os.path.basename(file)[:-4])
+        ) if save_media_to else None
+        save_path_CSV = os.path.join(
+            save_media_to, 'features_CSV', 'pred_{}.csv'.format(
+                os.path.basename(file)[:-4])
+        ) if save_media_to else None
+
+        if not os.path.exists(os.path.join(save_media_to, 'PNG')):
+            os.makedirs(os.path.join(save_media_to, 'PNG'))
+        if not os.path.exists(os.path.join(save_media_to, 'JSON')):
+            os.makedirs(os.path.join(save_media_to, 'JSON'))
+        if (not os.path.exists(os.path.join(save_media_to, 'features_CSV'))) and (save_do_features):
+            os.makedirs(os.path.join(save_media_to, 'features_CSV'))
 
         file_type = get_file_type(file)
         predictor = predict_image if file_type == 'image' else predict_video
@@ -276,16 +293,28 @@ def predict(path_or_dir, config_files, checkpoint, override_params,
             network, file,
             only_classes=only_class,
             ignore_classes=ignore_class,
-            save_path=save_path,
+            save_path=save_path_PNG,
         )
 
+        json_output = open(save_path_JSON, 'w')
+
+        # filtering out only bbox, label, and prob from prediction output dictionary.
+        json_objects = [{k: v for k, v in obj.items() if k != 'feature'}
+                        for obj in objects]
+        csv_objects = [obj['feature'] for obj in objects]
+        csv_objects = np.asarray(csv_objects, dtype=np.float32)
+
+        if (csv_objects is not None) and save_do_features:
+            df = pd.DataFrame(csv_objects)
+            df.to_csv(save_path_CSV)
+
         # TODO: Not writing jsons for video files for now.
-        if objects is not None and file_type == 'image':
-            output.write(
+        if json_objects is not None and file_type == 'image':
+            json_output.write(
                 json.dumps({
                     'file': file,
-                    'objects': objects,
+                    'objects': json_objects,
                 }) + '\n'
             )
 
-    output.close()
+    json_output.close()

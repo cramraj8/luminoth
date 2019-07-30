@@ -108,6 +108,9 @@ class RCNN(snt.AbstractModule):
         )
         # RCNNProposal generates the final bounding boxes and tries to remove
         # duplicates.
+        # tf.identity(self._config.proposals.total_max_detections, name='class_max_detect_input')
+        # tf.identity(self._config.proposals.total_max_detections, name='total_max_detect_input')
+        # tf.identity(self._config.proposals.min_prob_threshold, name='min_prob_threshold_input')
         self._rcnn_proposal = RCNNProposal(
             self._num_classes, self._config.proposals,
             variances=self._variances
@@ -237,6 +240,7 @@ class RCNN(snt.AbstractModule):
         prediction_dict['objects'] = proposals_pred['objects']
         prediction_dict['labels'] = proposals_pred['proposal_label']
         prediction_dict['probs'] = proposals_pred['proposal_label_prob']
+        prediction_dict['features'] = net
 
         if self._debug:
             prediction_dict['_debug']['proposal'] = proposals_pred

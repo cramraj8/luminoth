@@ -19,6 +19,7 @@ class FasterRCNN(snt.AbstractModule):
     It is also responsible for building the anchor reference which is used in
     graph for generating the dynamic anchors.
     """
+
     def __init__(self, config, name='fasterrcnn'):
         super(FasterRCNN, self).__init__(name=name)
 
@@ -97,6 +98,14 @@ class FasterRCNN(snt.AbstractModule):
         # Set rank and last dimension before using base network
         # TODO: Why does it loose information when using queue?
         image.set_shape((None, None, 3))
+        tf.identity(image, name='input_image_tensor')
+
+        tf.identity(self._config.model.rcnn.proposals.total_max_detections,
+                    name='class_max_detect_input')
+        tf.identity(self._config.model.rcnn.proposals.total_max_detections,
+                    name='total_max_detect_input')
+        tf.identity(self._config.model.rcnn.proposals.min_prob_threshold,
+                    name='min_prob_threshold_input')
 
         conv_feature_map = self.base_network(
             tf.expand_dims(image, 0), is_training=is_training
@@ -152,6 +161,13 @@ class FasterRCNN(snt.AbstractModule):
             )
 
             prediction_dict['classification_prediction'] = classification_pred
+            # Return classification head features (1x2048)
+            prediction_dict['classification_features'] = classification_pred['features']
+
+        tf.identity(classification_pred['objects'], name='output_objects')
+        tf.identity(classification_pred['labels'], name='output_labels')
+        tf.identity(classification_pred['probs'], name='output_probs')
+        tf.identity(classification_pred['features'], name='output_features')
 
         return prediction_dict
 

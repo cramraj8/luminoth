@@ -82,6 +82,8 @@ class PredictorNetwork(object):
                     objects_tf = cls_prediction['objects']
                     objects_labels_tf = cls_prediction['labels']
                     objects_labels_prob_tf = cls_prediction['probs']
+                    # retrieving feature vectors; only while having rcnn network
+                    objects_feats = pred_dict['classification_features']
                 else:
                     rpn_prediction = pred_dict['rpn_prediction']
                     objects_tf = rpn_prediction['proposals']
@@ -99,7 +101,9 @@ class PredictorNetwork(object):
                 'objects': objects_tf,
                 'labels': objects_labels_tf,
                 'probs': objects_labels_prob_tf,
-                'scale_factor': process_meta['scale_factor']
+                'scale_factor': process_meta['scale_factor'],
+                # adding feature vector return
+                'features': objects_feats
             }
 
             # If in debug mode, return the full prediction dictionary.
@@ -115,6 +119,7 @@ class PredictorNetwork(object):
         labels = fetched['labels'].tolist()
         probs = fetched['probs'].tolist()
         scale_factor = fetched['scale_factor']
+        features = fetched['features']
 
         if self.class_labels is not None:
             labels = [self.class_labels[label] for label in labels]
@@ -142,7 +147,8 @@ class PredictorNetwork(object):
                 'bbox': obj,
                 'label': label,
                 'prob': round(prob, 4),
-            } for obj, label, prob in zip(objects, labels, probs)
+                'feature': feature,
+            } for obj, label, prob, feature in zip(objects, labels, probs, features)
         ], key=lambda x: x['prob'], reverse=True)
 
         return predictions

@@ -108,8 +108,10 @@ class ObjectDetectionDataset(BaseDataset):
 
         height = tf.cast(context_example['height'], tf.int32)
         width = tf.cast(context_example['width'], tf.int32)
-        image_shape = tf.stack([height, width, 3])
+        # image_shape = tf.stack([height, width, 3])
+        image_shape = tf.stack([height, width, -1])
         image = tf.reshape(image, image_shape)
+        image = image[:, :, :3]
 
         label = self._sparse_to_tensor(sequence_example['label'])
         xmin = self._sparse_to_tensor(sequence_example['xmin'])
